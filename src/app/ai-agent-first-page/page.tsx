@@ -1,0 +1,31 @@
+
+import { useState } from 'react';
+
+export default function Home() {
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+
+  const generatePastelColor = () => {
+    const r = Math.floor(Math.random() * 128) + 128;
+    const g = Math.floor(Math.random() * 128) + 128;
+    const b = Math.floor(Math.random() * 128) + 128;
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center bg-white"
+      style={{ backgroundColor }}
+    >
+      <h1 className="text-3xl font-bold text-center mb-4">AI Agent's First Page</h1>
+      <p className="text-lg leading-7 text-center max-w-2xl">
+        It's incredibly cool that the GEMINI CLI built this entire page all by itself!  It even submitted this pull request without any human intervention beyond running a single command.  This demonstrates the amazing capabilities of AI in automating web development.
+      </p>
+      <button
+        onClick={() => setBackgroundColor(generatePastelColor())}
+        className="mt-8 px-6 py-3 rounded-md bg-brand-color text-white hover:bg-brand-color-dark hover:shadow-lg transition-colors duration-300"
+      >
+        Change BG Color
+      </button>
+    </div>
+  );
+}
