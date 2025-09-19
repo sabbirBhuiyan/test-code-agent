@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quanteron
+
+Welcome to Quanteron, a leading software firm dedicated to delivering high-quality, innovative software solutions. This repository contains the foundational codebase for our projects, showcasing our commitment to modern development practices and robust architecture.
+
+## Technologies Used
+
+This project leverages a powerful stack of modern web technologies:
+
+*   **Next.js**: A React framework for building full-stack web applications.
+*   **React**: A JavaScript library for building user interfaces.
+*   **TypeScript**: A strongly typed superset of JavaScript that compiles to plain JavaScript.
+*   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
+*   **ESLint**: A pluggable linting utility for JavaScript and JSX.
 
 ## Getting Started
 
-First, run the development server:
+Follow these instructions to set up the project locally.
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+*   Node.js (LTS version recommended)
+*   npm (comes with Node.js) or Yarn/pnpm
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/Quanteron/test-code-agent.git
+    cd test-code-agent
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    # or yarn install
+    # or pnpm install
+    ```
+
+### Development Server
+
+To run the development server with hot-reloading:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# or yarn dev
+# or pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To build the application for production:
 
-## Learn More
+```bash
+npm run build
+# or yarn build
+# or pnpm build
+```
 
-To learn more about Next.js, take a look at the following resources:
+This command optimizes the application for production and outputs the build artifacts to the `.next` directory.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Linting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To run the linter and check for code style issues:
 
-## Deploy on Vercel
+```bash
+npm run lint
+# or yarn lint
+# or pnpm lint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the terms of the [LICENSE](LICENSE) file.
+
+## Contact
+
+For any inquiries or support, please contact us at [info@quanteron.com](mailto:info@quanteron.com).
