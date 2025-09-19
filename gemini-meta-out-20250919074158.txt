@@ -1,0 +1,8 @@
+```json
+{
+  "branch_name": "feat/agent-add-teams-page",
+  "commit_message": "feat: Add standard teams page with member profiles",
+  "pr_title": "feat: Add Teams Page",
+  "pr_body": "This PR introduces a new 'Teams' page to display our team members. The page is designed to be visually appealing and follows standard layout conventions.\n\n**Changes:**\n- Added a new page for team member profiles.\n- Populated the page with placeholder team members, using Nordic/Aryan names, random mobile numbers, emails, and other dummy information.\n\n**Review Notes:**\n- The current team member data (names, contact info, etc.) are placeholders and will need to be replaced with actual team information.\n- Please review the overall design and responsiveness of the page."
+}
+```
