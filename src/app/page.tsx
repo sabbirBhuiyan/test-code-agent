@@ -1,9 +1,31 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      router.push("/login");
+    } else {
+      console.error("Logout failed");
+    }
+  };
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <h1 className="text-4xl font-bold">Welcome to the Protected Page!</h1>
+        <p className="text-lg">You are logged in.</p>
+        <Button onClick={handleLogout}>Logout</Button>
+
         <Image
           className="dark:invert"
           src="/next.svg"
