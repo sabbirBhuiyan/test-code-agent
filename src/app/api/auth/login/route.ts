@@ -4,8 +4,15 @@ import { serialize } from "cookie";
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 
-  // Dummy authentication logic
-  if (email === "test@example.com" && password === "password") {
+  if (!email || !password) {
+    return new NextResponse(JSON.stringify({ message: "Email and password are required" }), {
+      status: 400,
+    });
+  }
+
+  // In a real application, you would validate the email and password against a database
+  // For this example, we'll just check if they are present.
+  if (email && password) {
     const cookie = serialize("auth_token", "dummy_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

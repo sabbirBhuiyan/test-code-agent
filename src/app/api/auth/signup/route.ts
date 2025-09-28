@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   // Dummy signup logic
   if (email && password) {
     // In a real application, you would save the user to a database
-    console.log("New user registered:", { email, password });
+    console.log("New user registered with email:", email ? `${email.substring(0, 3)}***@***${email.split('@')[1].slice(-3)}` : 'N/A');
     return new NextResponse(JSON.stringify({ message: "Signup successful" }), {
       status: 200,
     });
