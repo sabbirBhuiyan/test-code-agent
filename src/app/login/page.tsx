@@ -4,30 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { login } from "@/lib/actions"; // Import the server action
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: FormData) => {
     setError(null);
+    const result = await login(formData);
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (response.ok) {
+    if (result.success) {
       router.push("/"); // Redirect to home page on successful login
     } else {
-      const data = await response.json();
-      setError(data.message || "Login failed");
+      setError(result.message || "Login failed");
     }
   };
 
@@ -37,7 +27,7 @@ export default function LoginPage() {
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">
           Login
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -48,8 +38,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email" // Add name attribute for FormData
               required
               className="mt-1 block w-full"
             />
@@ -64,8 +53,7 @@ export default function LoginPage() {
             <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password" // Add name attribute for FormData
               required
               className="mt-1 block w-full"
             />
@@ -76,7 +64,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/signup" className="text-blue-600 hover:underline">
             Sign Up
           </a>
