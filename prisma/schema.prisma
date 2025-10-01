@@ -16,6 +16,8 @@ model User {
   username     String?   @unique
   name         String?
   passwordHash String?
+  phone        String?
+  address      String?
   googleId     String?   @unique
   sessionToken String?   @unique
   createdAt    DateTime  @default(now())
