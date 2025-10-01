@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, userSchema } from '@/lib/schemas';
 import { updateUser } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
@@ -13,28 +13,75 @@ interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;
+  triggerRef: React.RefObject<HTMLElement | null>; // Ref to the element that opened the modal
 }
 
-export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
+export function EditUserModal({ isOpen, onClose, user, triggerRef }: EditUserModalProps) {
   const [formData, setFormData] = useState(user);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setFormData(user);
     setErrors({});
-  }, [user, isOpen]);
+
+    if (isOpen) {
+      const initialTriggerElement = triggerRef.current; // Capture the current value
+
+      // Focus the modal when it opens
+      modalRef.current?.focus();
+
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        // Return focus to the trigger element when the modal closes
+        if (initialTriggerElement) {
+          initialTriggerElement.focus();
+        }
+      };
+    } else {
+      // Clear errors when modal closes
+      setErrors({});
+    }
+  }, [user, isOpen, onClose, triggerRef]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setErrors({}); // Clear previous errors
+
     try {
       userSchema.parse(formData);
-      await updateUser(formData);
-      onClose();
+      const result = await updateUser(formData);
+
+      if (result.success) {
+        onClose();
+      } else {
+        // Handle server-side errors
+        if (result.errors) {
+          setErrors(result.errors);
+        } else {
+          setErrors({ general: result.message || "Failed to update user." });
+        }
+      }
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {};
@@ -44,16 +91,28 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
           }
         });
         setErrors(newErrors);
+      } else {
+        setErrors({ general: "An unexpected error occurred." });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+    <div
+      className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-user-title"
+      tabIndex={-1}
+      ref={modalRef}
+    >
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Edit User</h2>
+        <h2 id="edit-user-title" className="text-2xl font-bold mb-4">Edit User</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
@@ -63,6 +122,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
               value={formData.username}
               onChange={handleChange}
               className="mt-1 block w-full"
+              disabled={loading}
             />
             {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
           </div>
@@ -74,6 +134,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
               value={formData.phone}
               onChange={handleChange}
               className="mt-1 block w-full"
+              disabled={loading}
             />
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
@@ -85,6 +146,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
               value={formData.email}
               onChange={handleChange}
               className="mt-1 block w-full"
+              disabled={loading}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
@@ -96,12 +158,16 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
               value={formData.address}
               onChange={handleChange}
               className="mt-1 block w-full"
+              disabled={loading}
             />
             {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </div>
+          {errors.general && <p className="text-red-500 text-xs mt-1 mb-4">{errors.general}</p>}
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </form>
       </div>

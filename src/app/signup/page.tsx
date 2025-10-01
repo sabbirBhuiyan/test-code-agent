@@ -8,16 +8,22 @@ import { signup } from "@/lib/actions"; // Import the server action
 
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
     setError(null);
-    const result = await signup(formData);
+    setLoading(true);
+    try {
+      const result = await signup(formData);
 
-    if (result.success) {
-      router.push("/login"); // Redirect to login page on successful signup
-    } else {
-      setError(result.message || "Signup failed");
+      if (result.success) {
+        router.push("/login"); // Redirect to login page on successful signup
+      } else {
+        setError(result.message || "Signup failed");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,8 +80,8 @@ export default function SignupPage() {
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full">
-            Sign Up
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Loading..." : "Sign Up"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">

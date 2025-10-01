@@ -8,16 +8,22 @@ import { login } from "@/lib/actions"; // Import the server action
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
     setError(null);
-    const result = await login(formData);
+    setLoading(true);
+    try {
+      const result = await login(formData);
 
-    if (result.success) {
-      router.push("/"); // Redirect to home page on successful login
-    } else {
-      setError(result.message || "Login failed");
+      if (result.success) {
+        router.push("/"); // Redirect to home page on successful login
+      } else {
+        setError(result.message || "Login failed");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,8 +65,8 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full">
-            Login
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Loading..." : "Login"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
