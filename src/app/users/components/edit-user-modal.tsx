@@ -41,7 +41,7 @@ export function EditUserModal({
   })
 
   const onSubmit = async (values: z.infer<typeof userSchema>) => {
-    const result = await updateUser(values)
+    const result = await updateUser({ ...values, id: user.id })
     if (result.user) {
       onUserUpdated(result.user)
     } else if (result.error) {

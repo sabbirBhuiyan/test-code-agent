@@ -1,20 +1,9 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
 import { userSchema } from "./schema"
 import { z } from "zod"
-
-// Initialize Prisma Client (if not already done globally)
-// This is a common pattern to avoid multiple Prisma Client instances in Next.js server actions
-declare global {
-  var prisma: PrismaClient | undefined
-}
-
-import { PrismaClient } from "@prisma/client"
-
-export const db = globalThis.prisma || new PrismaClient()
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = db
+import { PrismaClientKnownRequestError } from "@prisma/client"
+import { prisma as db } from "@/lib/prisma"
 
 export async function getUsers() {
   try {
@@ -28,8 +17,11 @@ export async function getUsers() {
   }
 }
 
-export async function updateUser(values: z.infer<typeof userSchema>) {
+export async function updateUser(values: z.infer<typeof userSchema> & { id: string }) {
   try {
+    // Placeholder for session/authorization. In a real app, this would come from your auth system.
+    const session = { userId: "some_current_user_id", isAdmin: true }; // Example session
+
     const validatedFields = userSchema.safeParse(values)
 
     if (!validatedFields.success) {
@@ -44,6 +36,19 @@ export async function updateUser(values: z.infer<typeof userSchema>) {
       return { error: "User ID is required for update" }
     }
 
+    // Authorization check
+    // For demonstration, assuming the user can only update their own profile or an admin can update any.
+    // You would replace 'session.userId' with the actual authenticated user's ID.
+    if (!session.isAdmin && session.userId !== id) {
+      return { error: "Unauthorized to update this user." };
+    }
+
+    // Existence check
+    const existingUser = await db.user.findUnique({ where: { id } });
+    if (!existingUser) {
+      return { error: "User not found." };
+    }
+
     const updatedUser = await db.user.update({
       where: { id },
       data: {
@@ -55,8 +60,11 @@ export async function updateUser(values: z.infer<typeof userSchema>) {
       select: { id: true, username: true, email: true, phone: true, address: true },
     })
     return { user: updatedUser }
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002' && error.meta?.target?.includes('email')) {
+      return { error: "Email already in use." };
+    }
     console.error("Error updating user:", error)
-    return { error: "Failed to update user" }
+    return { error: "Failed to update user." }
   }
 }
