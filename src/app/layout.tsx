@@ -27,7 +27,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+              <nav className="flex justify-end p-4 bg-gray-800 text-white">
+          <a href="/login" className="mr-4 hover:underline">Login</a>
+          <a href="/signup" className="hover:underline">Sign Up</a>
+        </nav>
+        <main>{children}</main>
       </body>
     </html>
   );
