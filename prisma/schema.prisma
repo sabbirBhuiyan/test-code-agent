@@ -11,13 +11,11 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  username     String?   @unique
-  name         String?
-  passwordHash String?
-  googleId     String?   @unique
-  sessionToken String?   @unique
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id        String    @id @default(uuid())
+  email     String    @unique
+  username  String?   @unique
+  phone     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
