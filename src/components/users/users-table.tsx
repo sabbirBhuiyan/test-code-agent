@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { User } from '@/lib/schemas';
 import { Button } from '@/components/ui/button';
 import { EditUserModal } from './edit-user-modal';
@@ -14,12 +14,23 @@ interface UsersTableProps {
 export function UsersTable({ users }: UsersTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [localUsers, setLocalUsers] = useState<User[]>(users);
   const editButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setLocalUsers(users);
+  }, [users]);
 
   const handleEdit = (user: User, event: React.MouseEvent<HTMLButtonElement>) => {
     setSelectedUser(user);
     setIsModalOpen(true);
     editButtonRef.current = event.currentTarget; // Store the clicked button for focus management
+  };
+
+  const handleUserUpdated = (updatedUser: User) => {
+    setLocalUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+    );
   };
 
   return (
@@ -36,14 +47,14 @@ export function UsersTable({ users }: UsersTableProps) {
           </tr>
         </thead>
         <tbody>
-          {users.length === 0 ? (
+          {localUsers.length === 0 ? (
             <tr>
               <td colSpan={5} className="py-4 px-4 text-center text-gray-500" aria-live="polite">
                 No users found.
               </td>
             </tr>
           ) : (
-            users.map((user) => (
+            localUsers.map((user) => (
               <tr key={user.id}>
                 <td className="py-2 px-4 border-b">{user.username}</td>
                 <td className="py-2 px-4 border-b">{user.phone}</td>
@@ -69,6 +80,7 @@ export function UsersTable({ users }: UsersTableProps) {
           onClose={() => setIsModalOpen(false)}
           user={selectedUser}
           triggerRef={editButtonRef}
+          onUserUpdated={handleUserUpdated}
         />
       )}
     </div>

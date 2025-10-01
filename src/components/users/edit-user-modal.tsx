@@ -14,9 +14,10 @@ interface EditUserModalProps {
   onClose: () => void;
   user: User;
   triggerRef: React.RefObject<HTMLElement | null>; // Ref to the element that opened the modal
+  onUserUpdated: (updatedUser: User) => void;
 }
 
-export function EditUserModal({ isOpen, onClose, user, triggerRef }: EditUserModalProps) {
+export function EditUserModal({ isOpen, onClose, user, triggerRef, onUserUpdated }: EditUserModalProps) {
   const [formData, setFormData] = useState(user);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -58,7 +59,7 @@ export function EditUserModal({ isOpen, onClose, user, triggerRef }: EditUserMod
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -69,10 +70,11 @@ export function EditUserModal({ isOpen, onClose, user, triggerRef }: EditUserMod
     setErrors({}); // Clear previous errors
 
     try {
-      userSchema.parse(formData);
-      const result = await updateUser(formData);
+      const validatedData = userSchema.parse(formData);
+      const result = await updateUser(validatedData);
 
       if (result.success) {
+        onUserUpdated(validatedData);
         onClose();
       } else {
         // Handle server-side errors

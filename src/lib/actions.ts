@@ -3,7 +3,18 @@
 
 import { User, userSchema, loginSchema, signupSchema } from './schemas';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid'; // Will need to add uuid package
+import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
+
+const SALT_ROUNDS = 10;
+
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
 
 // Mock UserRepository for demonstration purposes, simulating a persistent data layer
 const userRepository = {
@@ -33,7 +44,7 @@ const userRepository = {
     console.log(`Updating user with ID: ${userData.id} in mock DB.`);
     const index = this._users.findIndex(user => user.id === userData.id);
     if (index !== -1) {
-      this._users[index] = userData;
+      this._users[index] = { ...this._users[index], ...userData };
       return true;
     }
     return false;
@@ -77,16 +88,19 @@ export async function updateUser(userData: User): Promise<{ success: boolean; me
 }
 
 export async function login(formData: FormData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const parsed = loginSchema.parse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
 
   try {
-    loginSchema.parse({ email, password });
-    // In a real app, you would verify credentials against a database
-    console.log('Attempting to log in with email:', email);
-    // Mock authentication
-    const user = await userRepository.findByEmail(email as string);
-    if (user && password === 'password') { // Simplified mock password check
+    const user = await userRepository.findByEmail(parsed.email);
+    if (!user || !user.passwordHash) {
+      return { success: false, message: 'Invalid credentials' };
+    }
+
+    const passwordMatch = await verifyPassword(parsed.password, user.passwordHash);
+    if (passwordMatch) {
       return { success: true, message: 'Login successful' };
     } else {
       return { success: false, message: 'Invalid credentials' };
@@ -100,33 +114,31 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData): Promise<{ success: boolean; message?: string }> {
-  const username = formData.get('username');
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const parsed = signupSchema.parse({
+    username: formData.get('username'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
 
   try {
-    signupSchema.parse({ username, email, password });
-
     // Check for duplicate username or email
-    const existingUserByEmail = await userRepository.findByEmail(email as string);
+    const existingUserByEmail = await userRepository.findByEmail(parsed.email);
     if (existingUserByEmail) {
       return { success: false, message: 'Email already registered.' };
     }
-    const existingUserByUsername = await userRepository.findByUsername(username as string);
+    const existingUserByUsername = await userRepository.findByUsername(parsed.username);
     if (existingUserByUsername) {
       return { success: false, message: 'Username already taken.' };
     }
 
-    // In a real app, you would hash the password before storing it
-    console.log('Attempting to sign up new user with email:', email);
+    const hashedPassword = await hashPassword(parsed.password);
 
     await userRepository.create({
-      username: username as string,
-      email: email as string,
+      username: parsed.username,
+      email: parsed.email,
       phone: '',
       address: '',
-      // In a real app, the password would be hashed and stored, not plaintext
-      // For this mock, we're not storing passwords directly in the mock repo
+      passwordHash: hashedPassword,
     });
 
     return { success: true, message: 'Signup successful' };

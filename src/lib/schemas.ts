@@ -7,6 +7,7 @@ export const userSchema = z.object({
   phone: z.string().min(10, 'Phone number is required and must be at least 10 digits').optional().or(z.literal('')),
   email: z.string().email('Invalid email address'),
   address: z.string().min(5, 'Address is required and must be at least 5 characters').optional().or(z.literal('')),
+  passwordHash: z.string().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
