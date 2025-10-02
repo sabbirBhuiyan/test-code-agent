@@ -4,30 +4,26 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signup } from "@/lib/actions"; // Import the server action
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: FormData) => {
     setError(null);
+    setLoading(true);
+    try {
+      const result = await signup(formData);
 
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (response.ok) {
-      router.push("/login"); // Redirect to login page on successful signup
-    } else {
-      const data = await response.json();
-      setError(data.message || "Signup failed");
+      if (result.success) {
+        router.push("/login"); // Redirect to login page on successful signup
+      } else {
+        setError(result.message || "Signup failed");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,7 +33,22 @@ export default function SignupPage() {
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">
           Sign Up
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Username
+            </label>
+            <Input
+              id="username"
+              type="text"
+              name="username" // Add name attribute for FormData
+              required
+              className="mt-1 block w-full"
+            />
+          </div>
           <div>
             <label
               htmlFor="email"
@@ -48,8 +59,7 @@ export default function SignupPage() {
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email" // Add name attribute for FormData
               required
               className="mt-1 block w-full"
             />
@@ -64,15 +74,14 @@ export default function SignupPage() {
             <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password" // Add name attribute for FormData
               required
               className="mt-1 block w-full"
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full">
-            Sign Up
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Loading..." : "Sign Up"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
