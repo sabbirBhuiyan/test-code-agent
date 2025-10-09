@@ -4,16 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     const response = await fetch("/api/auth/login", {
       method: "POST",
@@ -24,10 +23,16 @@ export default function LoginPage() {
     });
 
     if (response.ok) {
+      toast.success("Login successful!");
       router.push("/"); // Redirect to home page on successful login
     } else {
-      const data = await response.json();
-      setError(data.message || "Login failed");
+      try {
+        const data = await response.json();
+        toast.error(data.message || 'Login failed');
+      } catch (error) {
+        console.error("Failed to parse login error response:", error);
+        toast.error('Login failed. Please try again.');
+      }
     }
   };
 
@@ -70,7 +75,6 @@ export default function LoginPage() {
               className="mt-1 block w-full"
             />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full">
             Login
           </Button>

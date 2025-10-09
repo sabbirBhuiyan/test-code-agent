@@ -4,16 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     const response = await fetch("/api/auth/signup", {
       method: "POST",
@@ -24,10 +23,16 @@ export default function SignupPage() {
     });
 
     if (response.ok) {
+      toast.success("Signup successful! Please log in.");
       router.push("/login"); // Redirect to login page on successful signup
     } else {
-      const data = await response.json();
-      setError(data.message || "Signup failed");
+      try {
+        const data = await response.json();
+        toast.error(data.message || 'Signup failed');
+      } catch (error) {
+        console.error("Failed to parse signup error response:", error);
+        toast.error('Signup failed. Please try again.');
+      }
     }
   };
 
@@ -70,7 +75,6 @@ export default function SignupPage() {
               className="mt-1 block w-full"
             />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full">
             Sign Up
           </Button>
