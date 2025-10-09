@@ -26,8 +26,13 @@ export default function LoginPage() {
       toast.success("Login successful!");
       router.push("/"); // Redirect to home page on successful login
     } else {
-      const data = await response.json();
-      toast.error(data.message || "Login failed");
+      try {
+        const data = await response.json();
+        toast.error(data.message || 'Login failed');
+      } catch (error) {
+        console.error("Failed to parse login error response:", error);
+        toast.error('Login failed. Please try again.');
+      }
     }
   };
 

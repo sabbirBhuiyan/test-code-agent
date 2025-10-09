@@ -26,8 +26,13 @@ export default function SignupPage() {
       toast.success("Signup successful! Please log in.");
       router.push("/login"); // Redirect to login page on successful signup
     } else {
-      const data = await response.json();
-      toast.error(data.message || "Signup failed");
+      try {
+        const data = await response.json();
+        toast.error(data.message || 'Signup failed');
+      } catch (error) {
+        console.error("Failed to parse signup error response:", error);
+        toast.error('Signup failed. Please try again.');
+      }
     }
   };
 
